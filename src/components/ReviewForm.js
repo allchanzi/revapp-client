@@ -6,7 +6,7 @@ import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import moment from 'moment'
 
 function ReviewForm( {ipfs, contract, account, product, done}) {
-    const { register, handleSubmit } = useForm();
+    const { handleSubmit } = useForm();
     const [content, setContent] = useState("");
     const [author, setAuthor] = useState("");
     const [stars, setStars] = useState(0)
@@ -43,7 +43,6 @@ function ReviewForm( {ipfs, contract, account, product, done}) {
                            id="author"
                            placeholder="Put your wallet number or create alias"
                            name="author"
-                           ref={register({ required: true })}
                            onChange={(e) => { setAuthor(e.target.value );}}/>
                 </FormGroup>
                 <FormGroup>
