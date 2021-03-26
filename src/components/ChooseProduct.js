@@ -23,12 +23,12 @@ const ChooseProduct = ({showProductDetail}) => {
         <div className='container'>
             <Form onSubmit={handleSubmit(handleForm)}>
                 <InputGroup>
-                    <Input placeholder="please enter EAN number ... "
+                    <Input placeholder="please enter your barcode number ... "
                            onChange={(e) => { setEan(e.target.value );}}/>
                     <InputGroupAddon addonType="append"><Button>Search</Button></InputGroupAddon>
                 </InputGroup>
             </Form>
-            <a href='https://www.barcodelookup.com/api' target="_blank" rel="noopener noreferrer">Find your EAN product</a>
+            <a href='https://www.barcodelookup.com/api' target="_blank" rel="noopener noreferrer">Find your barcide product</a>
         </div>
     )
 }

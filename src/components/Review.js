@@ -50,14 +50,14 @@ const Review = ({ipfs, contract, account, id, product, done}) => {
                     setReview(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))));
                     if (result["1"].length > 2){
                         try {
-                        chunks = [];
-                        for await (const chunk of ipfs.cat(result["1"])) {
-                            chunks.push(chunk);
-                        }
-                        setResultHash(result["1"])
+                            chunks = [];
+                            for await (const chunk of ipfs.cat(result["1"])) {
+                                chunks.push(chunk);
+                            }
+                            setResultHash(result["1"])
 
-                        console.log(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))))
-                        setResult(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))));
+                            console.log(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))))
+                            setResult(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))));
                         } catch (e) {
                             console.log("Error: incorrect result format", )
                         }
