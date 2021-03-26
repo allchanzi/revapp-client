@@ -5,6 +5,8 @@ import ReviewForm from "./ReviewForm";
 import { Button} from "reactstrap";
 import Pages from "./Pagination";
 
+const BN = require('bn.js');
+
 const Product = ({web3, ipfs, contract, account, product, onError}) => {
     const [addReview, setAddReview] = useState(false);
     const [reviewIds, setReviewIds] = useState([]);
@@ -24,12 +26,13 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                 contract.methods.getReviewCountForProduct(product).call({from: account})
                     .then((result) => {
                         setReviewCount(v => result)
+                        const review_count = result
                         if ((result >= 0)) {
                             contract.methods.getReviewIdsForProductByPage(product, page, pageCount)
                                 .call({from: account})
                                 .then((result) => {
                                     setReviewIds(ids => result);
-                                    if (result.length > 10){
+                                    if (review_count > 10){
                                         setBlur(v => 'blur')
                                         getPrice(true)
                                     }
@@ -82,13 +85,26 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
 
     const payToShow = () => {
         if (contract != null) {
-            web3.eth.sendTransaction({from: account, to: contract.address, value: web3.toWei(cost, "ether")})
-                .then((receipt) => {
-                    setBlur(false)
-                })
-                .catch((err) => {
-                    alert("Transaction refused")
-                });
+                let nonce = null
+                web3.eth.getTransactionCount(account)
+                    .then(res => {
+                        nonce = res
+                        const value = cost * 21000 / 1000000000
+                        const bn_value = new BN(value)
+                        web3.eth.sendTransaction({
+                            nonce: nonce,
+                            from: account, to: contract.options.address,
+                            value: web3.utils.toWei(bn_value, "ether")
+                        })
+                            .then((receipt) => {
+                                setBlur(false)
+                            })
+                            .catch((err) => {
+                                console.log(err)
+                                alert("Transaction refused")
+                            });})
+                    .catch( e => {console.log("Could't get nonce")})
+
         }
     }
 
@@ -102,7 +118,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                 : <Button onClick={handleAddReviewClick} className='reviewButton'>{getAddButtonText()}</Button>}
             <br/>
             <div className='showButton'>
-                {isFetched && blur === 'blur' ? <Button onClick={payToShow}>Show for {cost * 21000 / 1000000000} ETH</Button> : <br/>}
+                {isFetched && blur === 'blur' ? <Button onClick={payToShow}>Show for {50 * 21000 / 1000000000} ETH</Button> : <br/>}
             </div>
             <div className={blur === 'blur' ? "blur reviewBlock" : "reviewBlock"}>
                 {reviewIds.map((id) => {
