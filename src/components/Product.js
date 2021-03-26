@@ -21,7 +21,6 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
     const [reviewCount, setReviewCount] = useState(0);
     useEffect(() => {
         const getProductReviews = async () => {
-
             if (contract != null) {
                 contract.methods.getReviewCountForProduct(product).call({from: account})
                     .then((result) => {
@@ -32,7 +31,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                                 .call({from: account})
                                 .then((result) => {
                                     setReviewIds(ids => result);
-                                    if (review_count > 10){
+                                    if (review_count > 10 && blur === null){
                                         setBlur(v => 'blur')
                                         getPrice(true)
                                     }
@@ -61,7 +60,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
 
         getProductReviews();
         setUpdate(v =>false);
-    }, [account, contract, product, onError, page, pageCount, update]);
+    }, [account, contract, product, onError, page, pageCount, update, blur]);
 
     const handleAddReviewClick = () => { setAddReview(true); }
 
