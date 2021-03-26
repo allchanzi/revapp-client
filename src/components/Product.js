@@ -117,7 +117,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                 : <Button onClick={handleAddReviewClick} className='reviewButton'>{getAddButtonText()}</Button>}
             <br/>
             <div className='showButton'>
-                {isFetched && blur === 'blur' ? <Button onClick={payToShow}>Show for {50 * 21000 / 1000000000} ETH</Button> : <br/>}
+                {isFetched && blur === 'blur' ? <Button onClick={payToShow}>Show for {cost * 21000 / 1000000000} ETH</Button> : <br/>}
             </div>
             <div className={blur === 'blur' ? "blur reviewBlock" : "reviewBlock"}>
                 {reviewIds.map((id) => {
