@@ -40,20 +40,28 @@ const Review = ({ipfs, contract, account, id, product, done}) => {
         const handleGetIPFSFile = async () => {
             if (contract != null) {
                 contract.methods.getReviewById(id).call({from: account}).then(async (result) => {
+                    console.log(id, result)
                     let chunks = [];
                     for await (const chunk of ipfs.cat(result["0"])) {
                         chunks.push(chunk);
                     }
+
                     setHash(result["0"])
                     setReview(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))));
                     if (result["1"].length > 2){
+                        try {
                         chunks = [];
                         for await (const chunk of ipfs.cat(result["1"])) {
                             chunks.push(chunk);
                         }
                         setResultHash(result["1"])
+
                         console.log(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))))
                         setResult(JSON.parse(uint8ArrayToString(uint8ArrayConcat(chunks))));
+                        } catch (e) {
+                            console.log("Error: incorrect result format", )
+                        }
+
                     }
                 }).catch((err) => {
                     console.log("Error: ", err)
