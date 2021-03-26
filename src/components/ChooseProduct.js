@@ -28,7 +28,7 @@ const ChooseProduct = ({showProductDetail}) => {
                     <InputGroupAddon addonType="append"><Button>Search</Button></InputGroupAddon>
                 </InputGroup>
             </Form>
-            <a href='https://www.barcodelookup.com/api' target="_blank" rel="noopener noreferrer">Find your barcide product</a>
+            <a href='https://www.barcodelookup.com/api' target="_blank" rel="noopener noreferrer">Find your barcode product</a>
         </div>
     )
 }
