@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import { useForm } from 'react-hook-form';
 import StarRatings from 'react-star-ratings';
 
-import { Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import {Button, Form, FormGroup, Label, Input, Spinner} from 'reactstrap';
 import moment from 'moment'
 
 function ReviewForm( {ipfs, contract, account, product, done}) {
@@ -11,8 +11,10 @@ function ReviewForm( {ipfs, contract, account, product, done}) {
     const [author, setAuthor] = useState("");
     const [stars, setStars] = useState(0)
     const [numberOfStars, ] = useState(5)
+    const [waitForTransaction, setWaitForTransaction] = useState(false)
 
     const handleAddReview = async (data, e) => {
+        setWaitForTransaction(true)
         const hash = await ipfs.add(JSON.stringify(
             {"author": author,
                   "address": account,
@@ -22,10 +24,12 @@ function ReviewForm( {ipfs, contract, account, product, done}) {
                   "rating" : stars,
                   "date": moment().format("DD/MM/YYYY hh:mm:ss")}));
         contract.methods.insertReview(hash.path, product).send({from: account})
-            .then(receipt => { try {e.target.reset(); done();} catch (e) {
+            .then(receipt => { try {e.target.reset(); setWaitForTransaction(false); done();} catch (e) {
                 console.log(e)
+                setWaitForTransaction(false);
             }})
             .catch(err => { alert("Error: transaction can't be completed !!! Redirecting to main page.");
+                            setWaitForTransaction(false);
                             window.location.reload();
             })
     }
@@ -55,6 +59,7 @@ function ReviewForm( {ipfs, contract, account, product, done}) {
                         onChange={(e) => { setContent(e.target.value); }}/>{' '}
                 </FormGroup>
                 <Button type='submit'>Submit</Button>
+                {waitForTransaction ? <Spinner color="info"/> : ""}
             </Form>
             <StarRatings
                 rating={stars}

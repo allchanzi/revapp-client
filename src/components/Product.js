@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import Review from './Review'
 import ProductDetail from "./ProductDetail";
 import ReviewForm from "./ReviewForm";
-import { Button} from "reactstrap";
+import {Button, Spinner} from "reactstrap";
 import Pages from "./Pagination";
 
 const BN = require('bn.js');
@@ -19,6 +19,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
     const [page, setPage] = useState(0);
     const [pageCount, ] = useState(10);
     const [reviewCount, setReviewCount] = useState(0);
+    const [waitForPayment, setWaitForPayment] = useState(false)
     useEffect(() => {
         const getProductReviews = async () => {
             if (contract != null) {
@@ -90,6 +91,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                         nonce = res
                         const value = cost * 21000 / 1000000000
                         const bn_value = new BN(value)
+                        setWaitForPayment(true)
                         web3.eth.sendTransaction({
                             nonce: nonce,
                             from: account, to: contract.options.address,
@@ -97,9 +99,11 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                         })
                             .then((receipt) => {
                                 setBlur(false)
+                                setWaitForPayment(false)
                             })
                             .catch((err) => {
                                 console.log(err)
+                                setWaitForPayment(false)
                                 alert("Transaction refused")
                             });})
                     .catch( e => {console.log("Could't get nonce")})
@@ -118,6 +122,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
             <br/>
             <div className='showButton'>
                 {isFetched && blur === 'blur' ? <Button onClick={payToShow}>Show for {cost * 21000 / 1000000000} ETH</Button> : <br/>}
+                {waitForPayment ? <Spinner color="info"/> : ""}
             </div>
             <div className={blur === 'blur' ? "blur reviewBlock" : "reviewBlock"}>
                 {reviewIds.map((id) => {
