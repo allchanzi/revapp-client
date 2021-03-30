@@ -51,7 +51,7 @@ const App = () => {
                     const acc = await web3.eth.getAccounts();
 
                     // Get the contract instance.
-                    const contract = new web3.eth.Contract(RevApp.abi, '0x156A18fAfb14197Cdf216396B536147AAF0ec32d');
+                    const contract = new web3.eth.Contract(RevApp.abi, '0xcD39392B496730D867b74DEF0A79a53C610B0426');
                     // const storageContract = new web3.eth.Contract(RevApp.abi, RevApp.networks[networkId].address);
                     // Set web3, accounts, and contract to the state
                     setWeb3(web3);
@@ -72,7 +72,7 @@ const App = () => {
 
     return (
             <div className="container">
-                {showError ? <Error error="Invalid item EAN code!!!" /> : ""}
+                {showError ? <Error error="Invalid item EAN code!!!" className="modal_danger"/> : ""}
                 <Navigation/>
                 {(revAppContract == null || accounts == null) ? (
                     <div className='row'>

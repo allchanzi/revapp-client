@@ -4,7 +4,8 @@ import ProductDetail from "./ProductDetail";
 import ReviewForm from "./ReviewForm";
 import {Button, Spinner} from "reactstrap";
 import Pages from "./Pagination";
-
+import Error from "./Error";
+import Blured from "./BluredComponent";
 const BN = require('bn.js');
 
 const Product = ({web3, ipfs, contract, account, product, onError}) => {
@@ -20,22 +21,23 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
     const [pageCount, ] = useState(10);
     const [reviewCount, setReviewCount] = useState(0);
     const [waitForPayment, setWaitForPayment] = useState(false)
+    const [showError, setShowError] = useState(false)
     useEffect(() => {
         const getProductReviews = async () => {
             if (contract != null) {
                 contract.methods.getReviewCountForProduct(product).call({from: account})
                     .then((result) => {
                         setReviewCount(v => result)
-                        const review_count = result
                         if ((result >= 0)) {
                             contract.methods.getReviewIdsForProductByPage(product, page, pageCount)
                                 .call({from: account})
                                 .then((result) => {
-                                    setReviewIds(ids => result);
-                                    if (review_count > 10 && blur === null){
+                                    if (result[0] === "0" ){
                                         setBlur(v => 'blur')
                                         getPrice(true)
+                                        return
                                     }
+                                    setReviewIds(ids => result);
                                     contract.methods.getFreeInsertForAddress().call({from: account})
                                         .then((result) => { setFreeInsert(r => result);})
                                         .catch((err) => { console.log(err); })
@@ -53,7 +55,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
             if (render){
                 fetch('https://ethgasstation.info/api/ethgasAPI.json?api-key='.concat(process.env.REACT_APP_API_KEY))
                     .then(response => response.json())
-                    .then(data => {setCost(c => data['safeLow']); setFetched(f =>true);},
+                    .then(data => {setCost(c => data['safeLow'] / 10); setFetched(f =>true);},
                           error => {console.log("Error price", error)})
                     .catch((err) => {console.log("Error price", err)})
             }
@@ -67,6 +69,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
 
     const handleAddedReview = (success) => {
         // if (success) {
+            setShowError(true)
             setAddReview(false)
             setUpdate(true)
         // }
@@ -85,35 +88,26 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
 
     const payToShow = () => {
         if (contract != null) {
-                let nonce = null
-                web3.eth.getTransactionCount(account)
-                    .then(res => {
-                        nonce = res
-                        const value = cost * 21000 / 1000000000
-                        const bn_value = new BN(value)
-                        setWaitForPayment(true)
-                        web3.eth.sendTransaction({
-                            nonce: nonce,
-                            from: account, to: contract.options.address,
-                            value: web3.utils.toWei(bn_value, "ether")
-                        })
-                            .then((receipt) => {
-                                setBlur(false)
-                                setWaitForPayment(false)
-                            })
-                            .catch((err) => {
-                                console.log(err)
-                                setWaitForPayment(false)
-                                alert("Transaction refused")
-                            });})
-                    .catch( e => {console.log("Could't get nonce")})
+            const value = cost * 21000
+            const bn_value = new BN(value)
+            setWaitForPayment(true)
+            contract.methods.payForReviews(product).send({from: account, value: web3.utils.toWei(bn_value, "gwei")})
+                .then((receipt) => {
 
-        }
+                    setBlur(false)
+                    setWaitForPayment(false)
+                })
+                .catch((err) => {
+                    console.log(err)
+                    setWaitForPayment(false)
+                    alert("Transaction refused")
+                });}
     }
 
     return(
         (!doRender ? "" :
         <div className='container main'>
+            {showError ? <Error error="Result for your review should by available in 24h" className="modal_info"/> : ""}
             <ProductDetail name={product}/>
             {addReview
                 ? (<ReviewForm ipfs={ipfs} contract={contract} account={account}
@@ -124,7 +118,8 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                 {isFetched && blur === 'blur' ? <Button onClick={payToShow}>Show for {cost * 21000 / 1000000000} ETH</Button> : <br/>}
                 {waitForPayment ? <Spinner color="info"/> : ""}
             </div>
-            <div className={blur === 'blur' ? "blur reviewBlock" : "reviewBlock"}>
+            {blur === 'blur' ? <Blured /> :
+                (<div className="reviewBlock">
                 {reviewIds.map((id) => {
                     return <Review key={id}
                                    ipfs={ipfs}
@@ -136,7 +131,7 @@ const Product = ({web3, ipfs, contract, account, product, onError}) => {
                     })
                 }
             <Pages length={Math.ceil(reviewCount / pageCount)} onPageChange={onPageChange} />
-           </div>
+           </div>)}
         </div>
         )
     )
